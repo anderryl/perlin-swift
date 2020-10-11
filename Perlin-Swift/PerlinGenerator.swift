@@ -55,8 +55,8 @@ class PerlinGenerator {
     var zoom:Float
     
     init(){
-        permut = [Int](count: PERMUTATION_SIZE, repeatedValue: 0)
-        for var i = 0; i < PERMUTATION_SIZE; i++ {
+        permut = [Int](repeating: 0, count: PERMUTATION_SIZE)
+        for i in 0 ..< PERMUTATION_SIZE {
             permut[i] = Int(rand() & 0xff)
         }
         octaves = 1
@@ -80,8 +80,8 @@ class PerlinGenerator {
     
     func dotProductI(x0:Float, x1:Int8,
                      y0:Float, y1:Int8) -> Float {
-            return self.productOf(x0, b: x1) +
-                   self.productOf(y0, b: y1)
+            return self.productOf(a: x0, b: x1) +
+                   self.productOf(a: y0, b: y1)
     }
     
     func spline(state:Float) -> Float{
@@ -108,42 +108,40 @@ class PerlinGenerator {
         let dy1 = y-Float(y1)
         
         // The 16 gradient values
-        var g0000 = PerlinGenerator.gradient[self.gradientAt(x0, j: y0)]
-        var g0100 = PerlinGenerator.gradient[self.gradientAt(x0, j: y1)]
-        var g1000 = PerlinGenerator.gradient[self.gradientAt(x1, j: y0)]
-        var g1100 = PerlinGenerator.gradient[self.gradientAt(x1, j: y1)]
+        var g0000 = PerlinGenerator.gradient[self.gradientAt(i: x0, j: y0)]
+        var g0100 = PerlinGenerator.gradient[self.gradientAt(i: x0, j: y1)]
+        var g1000 = PerlinGenerator.gradient[self.gradientAt(i: x1, j: y0)]
+        var g1100 = PerlinGenerator.gradient[self.gradientAt(i: x1, j: y1)]
         
         // The 16 dot products
-        let b0000 = self.dotProductI(dx0, x1: g0000[0], y0:dy0, y1:g0000[1])
-        let b0100 = self.dotProductI(dx0, x1: g0100[0], y0:dy1, y1:g0100[1])
-        let b1000 = self.dotProductI(dx1, x1: g1000[0], y0:dy0, y1:g1000[1])
-        let b1100 = self.dotProductI(dx1, x1: g1100[0], y0:dy1, y1:g1100[1])
+        let b0000 = self.dotProductI(x0: dx0, x1: g0000[0], y0:dy0, y1:g0000[1])
+        let b0100 = self.dotProductI(x0: dx0, x1: g0100[0], y0:dy1, y1:g0100[1])
+        let b1000 = self.dotProductI(x0: dx1, x1: g1000[0], y0:dy0, y1:g1000[1])
+        let b1100 = self.dotProductI(x0: dx1, x1: g1100[0], y0:dy1, y1:g1100[1])
         
-        dx0 = self.spline(dx0)
-        dy0 = self.spline(dy0)
+        dx0 = self.spline(state: dx0)
+        dy0 = self.spline(state: dy0)
         
-        let b001 = self.interpolate(b1000, b:b1100, x:dy0)
-        let b000 = self.interpolate(b0000, b:b0100, x:dy0)
+        let b001 = self.interpolate(a: b1000, b:b1100, x:dy0)
+        let b000 = self.interpolate(a: b0000, b:b0100, x:dy0)
         
-        let result = self.interpolate(b000, b:b001, x:dx0)
+        let result = self.interpolate(a: b000, b:b001, x:dx0)
         
         return result;
     }
     
-    func perlinNoise(x:Float, y:Float) -> Float{
+    func perlinNoise(x:Float, y:Float) -> Float {
         
         var noise:Float = 0.0
-        for (var octave = 0; octave<self.octaves; octave++) {
+        for octave in 0 ..< self.octaves {
             let frequency:Float = powf(2,Float(octave))
             let amplitude = powf(self.persistence, Float(octave))
             
-            noise += self.smoothNoise(x * frequency/zoom,
-                                      y: y * frequency/zoom) * amplitude
+            noise += self.smoothNoise(x: x * frequency/zoom, y: y * frequency/zoom) * amplitude
         }
         return noise
     }
 }
-
 
 
 
